@@ -10,15 +10,22 @@ const server = http.createServer((req, res) => {
   console.log(`Request method: ${req.method} | Endpoint: ${parsedUrl.pathname}`);
 
   let { pathname } = parsedUrl;
+  let id = null
 
-  const splitEndpoint = pathname.split('/');
+  const splitEndpoint = pathname.split('/').filter((Boolean));
+
+  if (splitEndpoint.length > 1) {
+    pathname = `/${splitEndpoint[0]}/:id`;
+    id = splitEndpoint[1];
+  }
 
   const route = routes.find((routeObj) => (
     routeObj.endpoint === pathname && routeObj.method === req.method
   ));
 
   if (route) {
-    req.query = Object.fromEntries(parsedUrl.searchParams);
+    req.query = parsedUrl.query;
+    req.params = { id };
     route.handler(req, res);
   } else {
     res.end(`Cannot ${req.method} ${parsedUrl}`);
